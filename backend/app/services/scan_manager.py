@@ -126,6 +126,7 @@ class ScanManager:
         scan = self.get(scan_id)
         if scan.state != ScanState.QUEUED:
             raise ValueError("scan cannot be started from state " + scan.state.value)
+        scan.state = ScanState.RUNNING
         scan.task = asyncio.create_task(self._run(scan))
         return scan
 

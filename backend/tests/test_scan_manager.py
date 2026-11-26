@@ -58,10 +58,10 @@ def test_scan_runs_dummy_check_and_completes():
 
     with mock:
         scan = asyncio.run(scenario())
+        assert route.call_count == 1
     assert scan.state == ScanState.COMPLETED
     assert scan.results[0].outcome == Outcome.PASSED
     assert scan.ctx.requests_made == 1
-    assert route.call_count == 1
     assert scan.to_dict()["state"] == "Completed"
 
 
@@ -79,9 +79,9 @@ def test_missing_account_is_skipped_with_reason_and_sends_nothing():
 
     with mock:
         scan = asyncio.run(scenario())
+        assert route.call_count == 0
     assert scan.results[0].outcome == Outcome.SKIPPED
     assert "user_b" in scan.results[0].message
-    assert route.call_count == 0
 
 
 def test_error_is_recorded_without_leaking_and_scan_continues():
@@ -142,9 +142,9 @@ def test_cancel_stops_all_requests():
 
     with mock:
         scan, count_at_cancel = asyncio.run(scenario())
+        assert route.call_count == count_at_cancel
     assert count_at_cancel > 0
     assert scan.state == ScanState.CANCELLED
-    assert route.call_count == count_at_cancel
     assert scan.results == []
     assert scan.finished_at != ""
 
@@ -162,8 +162,8 @@ def test_cancel_before_start():
 
     with mock:
         scan = asyncio.run(scenario())
+        assert route.call_count == 0
     assert scan.state == ScanState.CANCELLED
-    assert route.call_count == 0
 
 
 def test_cannot_start_twice():
@@ -205,10 +205,10 @@ def test_request_budget_is_enforced_per_scan():
 
     with mock:
         scan = asyncio.run(scenario())
+        assert route.call_count == 1
     assert scan.results[0].outcome == Outcome.PASSED
     assert scan.results[1].outcome == Outcome.ERROR
     assert "budget" in scan.results[1].message
-    assert route.call_count == 1
 
 
 class BrokenCheck(BaseCheck):
