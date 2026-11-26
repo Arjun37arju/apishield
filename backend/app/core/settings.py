@@ -1,4 +1,4 @@
-﻿from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     follow_redirects: bool = False
     fetch_remote_references: bool = False
     allow_lab_exception: bool = False
+    lab_port: int = 5000
     database_path: str = "./data/apishield.db"
     reports_dir: str = "./reports"
 
