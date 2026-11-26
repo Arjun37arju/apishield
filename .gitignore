@@ -32,3 +32,6 @@ generated-reports/
 .idea/
 .DS_Store
 Thumbs.db
+
+reports/
+private-specs/
