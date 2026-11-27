@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getScan, cancelScan, lastScan } from "../api/client";
 
@@ -79,7 +79,7 @@ export default function ScanProgress() {
               {(scan.results || []).map((r, i) => (
                 <tr key={i}>
                   <td>{r.name || r.check_id}</td>
-                  <td>{r.outcome}</td>
+                  <td><span className={"out out-" + String(r.outcome || "").toLowerCase().replace(/[^a-z]+/g, "-")}>{r.outcome}</span></td>
                   <td>{r.message}</td>
                 </tr>
               ))}

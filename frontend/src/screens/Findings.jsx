@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getFindings, lastScan } from "../api/client";
 
@@ -68,7 +68,7 @@ export default function Findings() {
                 style={{ cursor: "pointer" }}
               >
                 <td>{f.id}</td>
-                <td>{f.severity}</td>
+                <td><span className={"sev sev-" + String(f.severity || "").toLowerCase()}>{f.severity}</span></td>
                 <td>{f.category}</td>
                 <td>{f.title}</td>
                 <td>{f.endpoint}</td>
