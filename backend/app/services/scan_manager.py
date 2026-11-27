@@ -97,8 +97,9 @@ class Scan:
 
 
 class ScanManager:
-    def __init__(self, registry):
+    def __init__(self, registry, on_finished=None):
         self.registry = registry  # {check_id: check object}
+        self.on_finished = on_finished  # called once when a scan ends
         self.scans = {}
 
     def create(self, target, permission_confirmed, check_ids, accounts=None,
@@ -169,6 +170,11 @@ class ScanManager:
             scan.finished_at = scan.finished_at or _now()
             audit("scan_finished", scan_id=scan.id, state=scan.state.value,
                   requests=scan.ctx.requests_made)
+            if self.on_finished is not None:
+                try:
+                    self.on_finished(scan)
+                except Exception as e:
+                    audit("scan_save_failed", scan_id=scan.id, error=type(e).__name__)
 
     async def _run_check(self, scan, check):
         started = time.monotonic()

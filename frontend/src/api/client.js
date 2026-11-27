@@ -1,7 +1,22 @@
-﻿const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+﻿const BASE_URL = "http://127.0.0.1:8000";
 
-export async function getHealth() {
-  const res = await fetch(`${BASE_URL}/health`);
-  if (!res.ok) throw new Error("Backend not reachable");
-  return res.json();
+export async function validateTarget(url) {
+  const res = await fetch(`${BASE_URL}/targets/validate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      url,
+      permission_confirmed: true,
+    }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.detail || "Validation failed");
+  }
+
+  return data;
 }
