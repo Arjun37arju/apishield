@@ -37,7 +37,31 @@ Logins: Bearer / JWT token, Basic, API key and OAuth 2.0 client credentials.
 - Node.js 22 or newer
 - Windows PowerShell (the commands below use it)
 
-## Setup
+## Quick start (one command)
+
+Windows (PowerShell):
+
+```
+powershell -ExecutionPolicy Bypass -File .\start.ps1
+```
+
+Linux or macOS:
+
+```
+bash start.sh
+```
+
+The first run installs everything. Then it prints http://localhost:5173 and opens it in your
+browser. Press Enter in that window to stop. Only this computer can open the dashboard.
+
+Add `-Lab` (Windows) or `--lab` (Linux, macOS) to also start the practice lab. This turns the
+lab exception on for that run only and does not change `backend\.env`. Without it, the lab
+exception is always off. Add `-NoBrowser` or `--no-browser` to skip opening the browser.
+Logs are written to the `logs` folder.
+
+Needs Python 3, Node.js 22 or newer, and (Linux, macOS) curl.
+
+## Setup (manual)
 
 ```
 git clone https://github.com/Arjun37arju/apishield.git
