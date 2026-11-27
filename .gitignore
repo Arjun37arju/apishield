@@ -33,5 +33,5 @@ generated-reports/
 .DS_Store
 Thumbs.db
 
-reports/
+/backend/reports/
 private-specs/
