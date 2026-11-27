@@ -1,6 +1,12 @@
 ﻿import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { validateTarget, startScan, rememberScan } from "../api/client";
+import {
+  validateTarget,
+  startScan,
+  rememberScan,
+  getSelectedChecks,
+  buildAuthPayload,
+} from "../api/client";
 
 const METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"];
 
@@ -31,6 +37,9 @@ export default function TargetSetup() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const chosen = getSelectedChecks();
+  const hasAuth = !!buildAuthPayload();
+
   async function handleValidate() {
     setError("");
     setResult(null);
@@ -53,6 +62,10 @@ export default function TargetSetup() {
         lab_accounts: labAccounts,
       };
       if (endpoints.length) payload.endpoints = endpoints;
+      const checkIds = getSelectedChecks();
+      if (checkIds && checkIds.length) payload.check_ids = checkIds;
+      const auth = buildAuthPayload();
+      if (auth && !labAccounts) payload.auth = auth;
       const scan = await startScan(payload);
       rememberScan(scan.id);
       navigate("/progress/" + scan.id);
@@ -118,6 +131,22 @@ export default function TargetSetup() {
             />{" "}
             I own this system or have written permission to test it
           </label>
+        </p>
+
+        <p>
+          <small>
+            Checks to run:{" "}
+            {chosen && chosen.length
+              ? chosen.length + " selected on the Profile screen"
+              : "all (change this on the Profile screen)"}
+            <br />
+            Logins:{" "}
+            {labAccounts
+              ? "built-in lab accounts"
+              : hasAuth
+              ? "set on the Auth screen (kept in memory only)"
+              : "none (set them on the Auth screen)"}
+          </small>
         </p>
 
         <button type="button" onClick={handleValidate} disabled={!url || !permission}>

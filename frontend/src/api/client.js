@@ -52,3 +52,44 @@ export const rememberScan = (id) => {
 export const lastScan = () => {
   try { return localStorage.getItem("lastScanId") || ""; } catch { return ""; }
 };
+
+export const getSelectedChecks = () => {
+  try {
+    const raw = localStorage.getItem("selectedChecks");
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+};
+export const saveSelectedChecks = (ids) => {
+  try {
+    if (ids === null) localStorage.removeItem("selectedChecks");
+    else localStorage.setItem("selectedChecks", JSON.stringify(ids));
+  } catch { /* ignore */ }
+};
+
+// Logins live in memory only. Never put them in localStorage.
+let authForm = { user_a: { type: "bearer" }, user_b: { type: "bearer" } };
+export const getAuthForm = () => authForm;
+export const setAuthForm = (f) => { authForm = f; };
+
+function specFrom(a) {
+  if (!a) return null;
+  if (a.type === "bearer" && a.token) {
+    return { type: "bearer", token: a.token, expired_token: a.expired_token || "" };
+  }
+  if (a.type === "basic" && a.username && a.password) {
+    return { type: "basic", username: a.username, password: a.password };
+  }
+  if (a.type === "api_key" && a.key) {
+    return { type: "api_key", key: a.key, header_name: a.header_name || "X-API-Key" };
+  }
+  return null;
+}
+
+export function buildAuthPayload() {
+  const user_a = specFrom(authForm.user_a);
+  if (!user_a) return null;
+  const out = { user_a };
+  const user_b = specFrom(authForm.user_b);
+  if (user_b) out.user_b = user_b;
+  return out;
+}

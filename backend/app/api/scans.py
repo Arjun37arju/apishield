@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
@@ -10,7 +10,7 @@ from app.core.url_validation import TargetError, clean_target_url
 from app.database.db import add_report, get_scan, init_db, list_scans, save_scan
 from app.reports.pdf_report import build_report
 from app.scanner.registry import full_registry
-from app.services.auth_providers import AuthError
+from app.services.auth_providers import AuthError, ApiKeyProvider, BasicAuthProvider
 from app.services.auth_token_providers import BearerTokenProvider
 from app.services.scan_manager import ScanManager
 
@@ -37,6 +37,7 @@ class ScanRequest(BaseModel):
     check_ids: list[str] | None = None  # None = run all checks
     endpoints: list[str | dict] | None = None
     lab_accounts: bool = False  # use the built-in fake lab test accounts
+    auth: dict | None = None  # {"user_a": {...}, "user_b": {...}}, memory only
 
 
 def _lab_accounts(target):
@@ -57,6 +58,37 @@ def _lab_accounts(target):
     except AuthError as e:
         raise HTTPException(status_code=400, detail=str(e))
     return {"user_a": user_a, "user_b": user_b, "expired_token": expired}
+
+
+def _provider_from(spec):
+    kind = str(spec.get("type", "")).lower()
+    if kind == "bearer":
+        return BearerTokenProvider(spec.get("token"))
+    if kind == "basic":
+        return BasicAuthProvider(spec.get("username"), spec.get("password"))
+    if kind == "api_key":
+        return ApiKeyProvider(
+            spec.get("key"), spec.get("header_name") or "X-API-Key"
+        )
+    raise AuthError("unknown login type")
+
+
+def _user_accounts(auth):
+    """Accounts sent by the dashboard. Held in memory for this scan only."""
+    accounts = {}
+    try:
+        for name in ("user_a", "user_b"):
+            spec = (auth or {}).get(name)
+            if isinstance(spec, dict) and spec.get("type"):
+                accounts[name] = _provider_from(spec)
+        a = (auth or {}).get("user_a") or {}
+        if str(a.get("type", "")).lower() == "bearer" and a.get("expired_token"):
+            accounts["expired_token"] = BearerTokenProvider(
+                a.get("expired_token")
+            )
+    except AuthError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return accounts or None
 
 
 @router.get("/checks")
@@ -88,7 +120,9 @@ async def start_scan(req: ScanRequest):
     if req.endpoints:
         target["endpoints"] = req.endpoints[:50]
 
-    accounts = _lab_accounts(target) if req.lab_accounts else None
+    accounts = (
+        _lab_accounts(target) if req.lab_accounts else _user_accounts(req.auth)
+    )
     check_ids = req.check_ids if req.check_ids else list(registry.keys())
     try:
         scan = manager.create(
@@ -134,6 +168,7 @@ def cancel_scan(scan_id: str):
         return manager.cancel(scan_id).to_dict()
     except KeyError:
         raise HTTPException(status_code=404, detail="Scan not found")
+
 
 @router.post("/scans/{scan_id}/report")
 def make_report(scan_id: str):
