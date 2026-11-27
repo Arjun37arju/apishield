@@ -1,10 +1,17 @@
+from pathlib import Path
+
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from app.core.audit import audit
+from app.core.settings import settings
 from app.core.url_validation import TargetError, clean_target_url
-from app.database.db import get_scan, init_db, list_scans, save_scan
+from app.database.db import add_report, get_scan, init_db, list_scans, save_scan
+from app.reports.pdf_report import build_report
 from app.scanner.registry import full_registry
+from app.services.auth_providers import AuthError
+from app.services.auth_token_providers import BearerTokenProvider
 from app.services.scan_manager import ScanManager
 
 router = APIRouter(tags=["scans"])
@@ -28,7 +35,28 @@ class ScanRequest(BaseModel):
     url: str
     permission_confirmed: bool = False
     check_ids: list[str] | None = None  # None = run all checks
-    accounts: dict | None = None
+    endpoints: list[str | dict] | None = None
+    lab_accounts: bool = False  # use the built-in fake lab test accounts
+
+
+def _lab_accounts(target):
+    """Fake test accounts for the intentionally vulnerable lab only."""
+    if not (settings.allow_lab_exception and target["port"] == settings.lab_port):
+        raise HTTPException(
+            status_code=400,
+            detail="lab_accounts only works against the lab on port "
+            + str(settings.lab_port)
+            + " with ALLOW_LAB_EXCEPTION=true",
+        )
+    try:
+        user_a = BearerTokenProvider("lab-token-user-a")
+        user_b = BearerTokenProvider("lab-token-user-b")
+        expired = BearerTokenProvider(
+            "lab-token-expired", expired_token="lab-token-expired"
+        )
+    except AuthError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"user_a": user_a, "user_b": user_b, "expired_token": expired}
 
 
 @router.get("/checks")
@@ -57,10 +85,14 @@ async def start_scan(req: ScanRequest):
         audit("scan_rejected", reason=str(e))
         raise HTTPException(status_code=400, detail=str(e))
 
+    if req.endpoints:
+        target["endpoints"] = req.endpoints[:50]
+
+    accounts = _lab_accounts(target) if req.lab_accounts else None
     check_ids = req.check_ids if req.check_ids else list(registry.keys())
     try:
         scan = manager.create(
-            target, req.permission_confirmed, check_ids, accounts=req.accounts
+            target, req.permission_confirmed, check_ids, accounts=accounts
         )
         manager.start(scan.id)
     except ValueError as e:
@@ -102,3 +134,27 @@ def cancel_scan(scan_id: str):
         return manager.cancel(scan_id).to_dict()
     except KeyError:
         raise HTTPException(status_code=404, detail="Scan not found")
+
+@router.post("/scans/{scan_id}/report")
+def make_report(scan_id: str):
+    data = _find_scan(scan_id)
+    if data.get("state") in ("Running", "Queued"):
+        raise HTTPException(status_code=409, detail="Scan is not finished yet")
+    path = build_report(data, settings.reports_dir)
+    try:
+        add_report(scan_id, path.name)
+    except Exception as e:
+        audit("report_record_failed", scan_id=scan_id, reason=str(e))
+    audit("report_created", scan_id=scan_id, file=path.name)
+    return {"file_name": path.name, "download": "/reports/" + path.name}
+
+
+@router.get("/reports/{file_name}")
+def download_report(file_name: str):
+    # Only a bare .pdf file name inside the reports folder is allowed.
+    if Path(file_name).name != file_name or not file_name.endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Invalid file name")
+    path = Path(settings.reports_dir) / file_name
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="Report not found")
+    return FileResponse(path, media_type="application/pdf", filename=file_name)

@@ -67,6 +67,10 @@ class GateResponse:
     body: bytes
     truncated: bool
 
+    @property
+    def text(self):
+        return self.body.decode("utf-8", errors="replace")
+
 
 def ip_block_reason(ip_text):
     try:

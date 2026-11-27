@@ -11,11 +11,11 @@ from urllib.parse import urlsplit
 
 from app.services.auth_providers import _lab_http_allowed
 
-# Real object IDs that belong to User B in your lab (from Step 4).
-# "*" = use this ID for every resource. Or use {"orders": "2", "users": "5"}.
-USER_B_IDS = {"*": "2"}
+# Real object IDs that belong to User B in the lab (answer key: orders 3-4 = bob).
+# "*" = use this ID for every resource. Or use {"orders": "3", "users": "2"}.
+USER_B_IDS = {"orders": "3", "users": "2"}
 # DISPOSABLE objects of User B. The DELETE check really deletes them.
-USER_B_DELETE_IDS = {"*": "9"}
+USER_B_DELETE_IDS = {"orders": "4"}
 
 
 def _base_url(scan):
@@ -53,6 +53,17 @@ FIX_OBJECT = ("On the server, check that the logged-in user owns the requested o
 FIX_ROLE = "Check the user's role on the server for every admin endpoint."
 
 
+def _text(resp):
+    """Reply body as text. Works for any reply object that has .text or .body."""
+    text = getattr(resp, "text", None)
+    if isinstance(text, str):
+        return text
+    body = getattr(resp, "body", b"") or b""
+    if isinstance(body, bytes):
+        return body.decode("utf-8", errors="replace")
+    return str(body)
+
+
 def _eps(scan, method):
     return [p for m, p in _endpoints(scan) if m == method and p]
 
@@ -83,7 +94,7 @@ class _Acc:
                     methods.append(method)
                 self.merged.append(f)
                 return
-        ev = make_evidence(method, url, {}, resp.status_code, resp.text)
+        ev = make_evidence(method, url, {}, resp.status_code, _text(resp))
         ev["root_cause"] = root
         ev["affected_methods"] = [method]
         self.new.append(Finding(
@@ -130,7 +141,7 @@ class B1BolaRead(_AuthzCheck):
             acc.tested += 1
             r = await scan.request("GET", url, account="user_a")
             if r.status_code == 200:
-                same = r.text.strip() == base.text.strip()
+                same = _text(r).strip() == _text(base).strip()
                 acc.hit(scan, ROOT_OBJECT,
                         "Missing object-level ownership check (BOLA / IDOR)",
                         tpl, "GET", url, r, Severity.HIGH,
@@ -177,7 +188,8 @@ class _WriteCheck(_AuthzCheck):
         if not _is_lab(scan):
             return CheckReport(Outcome.SKIPPED, "write tests run on the lab only")
         acc = _Acc()
-        body = None if self.method == "DELETE" else {"apishield_marker": MARKER}
+        # The lab's PATCH expects {"status": "..."}; the marker goes into that field.
+        body = None if self.method == "DELETE" else {"status": MARKER}
         for tpl in _eps(scan, self.method):
             path = _fill(tpl, self.ids)
             if not path:
@@ -190,7 +202,7 @@ class _WriteCheck(_AuthzCheck):
                 if self.method == "DELETE":
                     confirmed = check.status_code == 404
                 else:
-                    confirmed = MARKER in check.text
+                    confirmed = MARKER in _text(check)
                 acc.hit(scan, ROOT_OBJECT,
                         "Missing object-level ownership check (BOLA / IDOR)",
                         tpl, self.method, url, r, Severity.HIGH,

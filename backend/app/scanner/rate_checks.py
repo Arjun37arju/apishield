@@ -59,24 +59,35 @@ def _acct(scan):
 def _cancelled(scan):
     return bool(getattr(getattr(scan, "ctx", None), "cancelled", False))
 
+_POST = {}  # path -> JSON body, filled in by _targets for POST login endpoints
+LOGIN_TEST_BODY = {"username": "apishield-test", "password": "wrong-password-for-test"}
 
 def _is_login_like(path):
     return any(h in path.lower() for h in LOGIN_HINTS)
 
 
 def _targets(scan):
-    """GET paths to test (no {id} templates). Login-like paths first."""
+    """Paths to test (no {id} templates). GET endpoints, plus login-like POST
+    endpoints. Login-like paths first."""
     raw = scan.target.get("endpoints") or []
     found = []
+    _POST.clear()
     for ep in raw:
         if isinstance(ep, str):
-            method, path = "GET", ep
+            method, path, body = "GET", ep, None
         else:
             method = str(ep.get("method", "GET")).upper()
             path = str(ep.get("path", ""))
-        if method != "GET" or not path.startswith("/") or "{" in path:
+            body = ep.get("json")
+        if not path.startswith("/") or "{" in path:
             continue
         if any(h in path.lower() for h in SKIP_HINTS):
+            continue
+        if method == "POST":
+            if not _is_login_like(path):
+                continue  # only login-like POST endpoints are rate tested
+            _POST[path] = body or LOGIN_TEST_BODY
+        elif method != "GET":
             continue
         if path not in found:
             found.append(path)
@@ -88,6 +99,7 @@ def _targets(scan):
 
 async def _probe_endpoint(scan, path, acct):
     url = _origin(scan) + path
+    method = "POST" if path in _POST else "GET"
     info = {"path": path, "url": url, "sent": 0, "first": None, "last": None,
             "limited_at": None, "retry_after": None, "other_at": None,
             "header_limit": None, "has_headers": False, "missing": False,
@@ -97,7 +109,11 @@ async def _probe_endpoint(scan, path, acct):
             info["stopped"] = "scan cancelled"
             break
         try:
-            resp = await scan.request("GET", url, account=acct)
+            resp = await scan.request(
+                method, url,
+                account=None if method == "POST" else acct,
+                json_body=_POST.get(path),
+            )
         except RequestBlocked as e:
             if info["sent"] == 0:
                 raise
@@ -153,16 +169,17 @@ def _wait_seconds(retry_after):
 
 
 def _finding(title, path, url, resp, severity, confidence, status, impact, fix):
+    method = "POST" if path in _POST else "GET"
     return Finding(
         title=title,
         category="Rate limiting",
-        endpoint="GET " + path,
+        endpoint=method + " " + path,
         severity=severity,
         confidence=confidence,
         status=status,
         impact=impact,
         fix=fix,
-        evidence=make_evidence("GET", url, {}, resp.status_code, _text(resp)),
+        evidence=make_evidence(method, url, {}, resp.status_code, _text(resp))
     )
 
 
