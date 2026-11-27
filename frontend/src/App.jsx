@@ -29,8 +29,11 @@ export default function App() {
           <Route path="/auth" element={<AuthSettings />} />
           <Route path="/profile" element={<ScanProfile />} />
           <Route path="/progress" element={<ScanProgress />} />
+          <Route path="/progress/:id" element={<ScanProgress />} />
           <Route path="/findings" element={<Findings />} />
+          <Route path="/findings/:id" element={<Findings />} />
           <Route path="/report" element={<ReportView />} />
+          <Route path="/report/:id" element={<ReportView />} />
           <Route path="/history" element={<ScanHistory />} />
         </Routes>
       </div>
