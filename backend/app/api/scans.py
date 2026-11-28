@@ -185,11 +185,11 @@ def make_report(scan_id: str):
 
 
 @router.get("/reports/{file_name}")
-def download_report(file_name: str):
+def download_report(file_name: str, download: bool = False):
     # Only a bare .pdf file name inside the reports folder is allowed.
     if Path(file_name).name != file_name or not file_name.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Invalid file name")
     path = Path(settings.reports_dir) / file_name
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Report not found")
-    return FileResponse(path, media_type="application/pdf", filename=file_name, content_disposition_type="inline")
+    return FileResponse(path, media_type="application/pdf", filename=file_name, content_disposition_type="attachment" if download else "inline")

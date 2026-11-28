@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { createReport, reportUrl, lastScan } from "../api/client";
 
@@ -45,8 +45,8 @@ export default function ReportView() {
         <p>
           Report ready: <b>{report.file_name}</b>
           <br />
-          <a href={reportUrl(report.file_name)} target="_blank" rel="noreferrer">
-            Open / download PDF
+          <a href={reportUrl(report.file_name) + "?download=1"} rel="noreferrer">Download PDF</a>{" | "}<a href={reportUrl(report.file_name)} target="_blank" rel="noreferrer">
+            Open PDF
           </a>
         </p>
       )}
