@@ -75,9 +75,21 @@ cleanup() {
     kill -TERM -- "-$p" 2>/dev/null || kill -TERM "$p" 2>/dev/null
   done
   wait 2>/dev/null
+  sleep 1
+  clear_data
 }
 trap cleanup INT TERM EXIT
 
+# ---- Erase scan data on every start and stop (set KEEP_DATA=1 to keep it) ----
+DB_FILE="$ROOT/backend/data/apishield.db"
+clear_data() {
+  [ "${KEEP_DATA:-0}" = "1" ] && return 0
+  for f in "$DB_FILE" "$DB_FILE-wal" "$DB_FILE-shm" "$DB_FILE-journal"; do
+    if [ -f "$f" ]; then rm -f "$f" && echo "Cleared old scan data."; fi
+  done
+}
+clear_data
+# ---- end ----
 # The lab exception is forced OFF unless --lab is given, whatever backend/.env says.
 LABVAL=false
 if [ "$LAB" -eq 1 ]; then LABVAL=true; fi
