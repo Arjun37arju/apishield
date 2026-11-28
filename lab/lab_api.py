@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 # INTENTIONALLY VULNERABLE. Fake data only. Run on 127.0.0.1 only.
-app = FastAPI(title="APIShield Lab (intentionally vulnerable)", version="1.0")
+app = FastAPI(title="API-Gapwolf Lab (intentionally vulnerable)", version="1.0")
 
 # Planted weakness W7: CORS allows any origin
 app.add_middleware(

@@ -5,7 +5,7 @@ from app.api.scans import router as scans_router
 from app.api.targets import router as targets_router
 from app.core.settings import settings
 
-app = FastAPI(title="APIShield")
+app = FastAPI(title="API-Gapwolf")
 
 app.add_middleware(
     CORSMiddleware,

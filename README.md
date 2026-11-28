@@ -1,6 +1,6 @@
-# APIShield
+# API-Gapwolf
 
-APIShield is a security scanner for web APIs. You give it the address of an API you own
+API-Gapwolf is a security scanner for web APIs. You give it the address of an API you own
 (and optionally an OpenAPI file). It runs a limited set of non-destructive checks, shows
 the findings in a dashboard, keeps the history in a local SQLite database, and exports a
 redacted PDF report.
@@ -64,8 +64,8 @@ Needs Python 3, Node.js 22 or newer, and (Linux, macOS) curl.
 ## Setup (manual)
 
 ```
-git clone https://github.com/Arjun37arju/apishield.git
-cd apishield
+git clone https://github.com/Arjun37arju/api-gapwolf.git
+cd api-gapwolf
 python -m venv .venv
 .venv\Scripts\python.exe -m pip install -r backend\requirements.txt
 copy backend\.env.example backend\.env

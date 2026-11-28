@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# APIShield launcher for Linux and macOS. Runs the backend and the dashboard on this computer only.
+# API-Gapwolf launcher for Linux and macOS. Runs the backend and the dashboard on this computer only.
 # Usage: bash start.sh [--lab] [--no-browser]
 set -u
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -70,7 +70,7 @@ start_bg() { # start_bg <folder> <logfile> <command...>
 cleanup() {
   trap - INT TERM EXIT
   echo
-  echo "Stopping APIShield..."
+  echo "Stopping API-Gapwolf..."
   for p in ${PIDS[@]+"${PIDS[@]}"}; do
     kill -TERM -- "-$p" 2>/dev/null || kill -TERM "$p" 2>/dev/null
   done
@@ -81,7 +81,7 @@ cleanup() {
 trap cleanup INT TERM EXIT
 
 # ---- Erase scan data on every start and stop (set KEEP_DATA=1 to keep it) ----
-DB_FILE="$ROOT/backend/data/apishield.db"
+DB_FILE="$ROOT/backend/data/api-gapwolf.db"
 clear_data() {
   [ "${KEEP_DATA:-0}" = "1" ] && return 0
   for f in "$DB_FILE" "$DB_FILE-wal" "$DB_FILE-shm" "$DB_FILE-journal"; do
@@ -111,7 +111,7 @@ wait_url "http://localhost:5173" 45 || { echo "The dashboard did not start. Last
 
 echo
 echo "=========================================================="
-echo "  APIShield is running:   http://localhost:5173"
+echo "  API-Gapwolf is running:   http://localhost:5173"
 echo "  Only this computer can open it."
 if [ "$LAB" -eq 1 ]; then
   echo "  Lab mode ON: scan the practice lab at http://127.0.0.1:5000"

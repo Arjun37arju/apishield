@@ -60,7 +60,7 @@ def _cancelled(scan):
     return bool(getattr(getattr(scan, "ctx", None), "cancelled", False))
 
 _POST = {}  # path -> JSON body, filled in by _targets for POST login endpoints
-LOGIN_TEST_BODY = {"username": "apishield-test", "password": "wrong-password-for-test"}
+LOGIN_TEST_BODY = {"username": "api-gapwolf-test", "password": "wrong-password-for-test"}
 
 def _is_login_like(path):
     return any(h in path.lower() for h in LOGIN_HINTS)

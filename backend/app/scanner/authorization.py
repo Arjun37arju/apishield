@@ -43,7 +43,7 @@ def _is_lab(scan):
 ID_PARAM = re.compile(r"\{[^}/]+\}")
 ADMIN_HINT = re.compile(r"/(admin|internal|manage|management|superuser)(/|$)", re.I)
 DENY = {401, 403, 404}
-MARKER = "apishield-test"
+MARKER = "api-gapwolf-test"
 
 ROOT_OBJECT = "object-ownership"
 ROOT_ROLE = "admin-role"

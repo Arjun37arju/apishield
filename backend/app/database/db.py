@@ -71,7 +71,7 @@ CREATE INDEX IF NOT EXISTS idx_reports_scan ON reports(scan_id);
 
 
 def _db_path(path=None):
-    return Path(path or getattr(settings, "database_path", "data/apishield.db"))
+    return Path(path or getattr(settings, "database_path", "data/api-gapwolf.db"))
 
 
 @contextmanager

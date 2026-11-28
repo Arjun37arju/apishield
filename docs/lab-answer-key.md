@@ -1,4 +1,4 @@
-# APIShield lab answer key
+# API-Gapwolf lab answer key
 
 The lab (lab/lab_api.py) is intentionally vulnerable. Fake data only. Run on 127.0.0.1:5000.
 

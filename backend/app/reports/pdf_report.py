@@ -46,7 +46,7 @@ def _footer(canvas, doc):
     canvas.saveState()
     canvas.setFont("Helvetica", 8)
     canvas.setFillColor(colors.grey)
-    canvas.drawString(18 * mm, 10 * mm, "APIShield report - confidential")
+    canvas.drawString(18 * mm, 10 * mm, "API-Gapwolf report - confidential")
     canvas.drawRightString(A4[0] - 18 * mm, 10 * mm, "Page %d" % doc.page)
     canvas.restoreState()
 
@@ -156,18 +156,18 @@ def build_report(scan, out_dir):
     Returns the Path of the new file."""
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    path = out_dir / ("apishield-report-" + str(scan.get("id", "scan")) + ".pdf")
+    path = out_dir / ("api-gapwolf-report-" + str(scan.get("id", "scan")) + ".pdf")
 
     doc = SimpleDocTemplate(
         str(path), pagesize=A4, leftMargin=18 * mm, rightMargin=18 * mm,
-        topMargin=18 * mm, bottomMargin=18 * mm, title="APIShield report",
+        topMargin=18 * mm, bottomMargin=18 * mm, title="API-Gapwolf report",
     )
     findings = list(scan.get("findings") or [])
     findings.sort(key=lambda f: SEVERITY_ORDER.index(f.get("severity"))
                   if f.get("severity") in SEVERITY_ORDER else 99)
 
     story = [
-        _p("APIShield Security Report", H1),
+        _p("API-Gapwolf Security Report", H1),
         _p("Generated " + datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"), SMALL),
         Spacer(1, 8),
         _p("Summary", H2),

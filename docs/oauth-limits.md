@@ -1,4 +1,4 @@
-# OAuth 2.0 support in APIShield v1
+# OAuth 2.0 support in API-Gapwolf v1
 
 Supported flow (ONE):
 - Client credentials, with a least-privilege test client.

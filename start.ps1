@@ -1,5 +1,5 @@
 param([switch]$Lab, [switch]$NoBrowser)
-# APIShield launcher for Windows. Runs the backend and the dashboard on this computer only.
+# API-Gapwolf launcher for Windows. Runs the backend and the dashboard on this computer only.
 # Usage: powershell -ExecutionPolicy Bypass -File .\start.ps1 [-Lab] [-NoBrowser]
 $ErrorActionPreference = "Stop"
 $root = $PSScriptRoot
@@ -60,7 +60,7 @@ foreach ($p in 8000, 5173) {
 if ($Lab -and (PortBusy 5000)) { Fail "Port 5000 is already in use. Close the other lab window first." }
 
 # ---- Erase scan data on every start and stop (set $env:KEEP_DATA="1" to keep it) ----
-$dbFile = "$root\backend\data\apishield.db"
+$dbFile = "$root\backend\data\api-gapwolf.db"
 function ClearData {
   if ($env:KEEP_DATA -eq "1") { return }
   foreach ($f in @($dbFile, "$dbFile-wal", "$dbFile-shm", "$dbFile-journal")) {
@@ -105,7 +105,7 @@ try {
 
   Write-Host ""
   Write-Host "=========================================================="
-  Write-Host "  APIShield is running:   http://localhost:5173" -ForegroundColor Green
+  Write-Host "  API-Gapwolf is running:   http://localhost:5173" -ForegroundColor Green
   Write-Host "  Only this computer can open it."
   if ($Lab) { Write-Host "  Lab mode ON: scan the practice lab at http://127.0.0.1:5000" }
   Write-Host "  Press Enter here (or Ctrl+C) to stop everything."
@@ -118,5 +118,5 @@ finally {
   Remove-Item Env:ALLOW_LAB_EXCEPTION -ErrorAction SilentlyContinue
   Start-Sleep -Seconds 1
   ClearData
-  Write-Host "APIShield stopped."
+  Write-Host "API-Gapwolf stopped."
 }

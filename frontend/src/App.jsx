@@ -47,7 +47,7 @@ export default function App() {
             />
           </svg>
           <div className="brand-text">
-            <span className="brand-name">APIShield</span>
+            <span className="brand-name">API-Gapwolf</span>
             <span className="brand-tag">Local-first API security testing</span>
           </div>
         </div>

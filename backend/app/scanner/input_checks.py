@@ -237,7 +237,7 @@ class OddParamCheck(_InputCheck):
     name = "Input 4: odd parameters"
     raw_query = True
     values = [("repeated parameter", "id=1&id=2"),
-              ("unknown and array parameters", "apishield_x[]=1&debug=true")]
+              ("unknown and array parameters", "api-gapwolf_x[]=1&debug=true")]
     title = "Odd parameters reveal an internal error"
     impact = ("Unexpected parameters cause an internal error, which can leak "
               "details.")

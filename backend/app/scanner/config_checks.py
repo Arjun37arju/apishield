@@ -23,8 +23,8 @@ MAX_ENDPOINTS = 4
 BASELINE_VALUE = "1"
 ID_PARAM = re.compile(r"\{[^}/]+\}")
 SKIP_HINTS = ("/docs", "/openapi", "/static", "/favicon")
-EVIL_ORIGIN = "https://apishield-test.example"
-NOT_FOUND_PATH = "/apishield-not-found-test"
+EVIL_ORIGIN = "https://api-gapwolf-test.example"
+NOT_FOUND_PATH = "/api-gapwolf-not-found-test"
 CATEGORY = "Security configuration"
 
 SEV_RANK = {Severity.CRITICAL: 4, Severity.HIGH: 3, Severity.MEDIUM: 2,

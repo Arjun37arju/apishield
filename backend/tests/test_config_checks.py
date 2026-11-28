@@ -60,7 +60,7 @@ def run_all(scan):
 
 
 def clean(method, url, headers):
-    if "apishield-not-found" in url:
+    if "api-gapwolf-not-found" in url:
         return R(404, '{"error": "not found"}', dict(GOOD))
     return R(200, '{"ok": true}', dict(GOOD))
 
@@ -164,7 +164,7 @@ def test_card_number_is_low_confidence_manual_review():
 
 def test_error_page_with_stack_trace_is_found():
     def handler(method, url, headers):
-        if "apishield-not-found" in url:
+        if "api-gapwolf-not-found" in url:
             return R(404, 'Traceback (most recent call last):\n  File "app.py", line 3', dict(GOOD))
         return clean(method, url, headers)
     scan = FakeScan(handler)
@@ -189,7 +189,7 @@ def test_error_details_already_reported_by_input_checks_are_not_repeated():
                       confidence=Confidence.MEDIUM, impact="x", fix="y")
 
     def handler(method, url, headers):
-        if "apishield-not-found" in url:
+        if "api-gapwolf-not-found" in url:
             return R(404, 'Traceback (most recent call last):\n  File "app.py", line 3', dict(GOOD))
         return clean(method, url, headers)
     scan = FakeScan(handler, findings=[earlier])
