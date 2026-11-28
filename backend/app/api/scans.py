@@ -1,4 +1,4 @@
-﻿from pathlib import Path
+from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
@@ -192,4 +192,4 @@ def download_report(file_name: str):
     path = Path(settings.reports_dir) / file_name
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Report not found")
-    return FileResponse(path, media_type="application/pdf", filename=file_name)
+    return FileResponse(path, media_type="application/pdf", filename=file_name, content_disposition_type="inline")
