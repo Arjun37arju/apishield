@@ -15,7 +15,6 @@ class Settings(BaseSettings):
     follow_redirects: bool = False
     fetch_remote_references: bool = False
     allow_lab_exception: bool = False
-    database_path: str = "data/api-gapwolf.db"
     lab_port: int = 5000
     database_path: str = "./data/api-gapwolf.db"
     reports_dir: str = "./reports"

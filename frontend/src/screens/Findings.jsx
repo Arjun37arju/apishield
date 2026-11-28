@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getFindings, lastScan } from "../api/client";
 
@@ -61,7 +61,7 @@ export default function Findings() {
         </thead>
         <tbody>
           {shown.map((f) => (
-            <>
+            <Fragment key={f.id}>
               <tr
                 key={f.id}
                 onClick={() => setOpen(open === f.id ? null : f.id)}
@@ -87,7 +87,7 @@ export default function Findings() {
                   </td>
                 </tr>
               )}
-            </>
+            </Fragment>
           ))}
         </tbody>
       </table>

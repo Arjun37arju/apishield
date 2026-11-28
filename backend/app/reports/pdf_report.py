@@ -151,6 +151,17 @@ def _finding_block(f):
     return KeepTogether(parts)
 
 
+def _warning(scan):
+    results = scan.get("results") or []
+    errors = sum(1 for r in results if r.get("outcome") == "Error")
+    if results and scan.get("requests_made", 0) == 0:
+        text = "WARNING: no requests were sent, so nothing was tested."
+    elif results and errors * 2 >= len(results):
+        text = "WARNING: most checks ended in Error, so this report is incomplete."
+    else:
+        return None
+    return _p(text + " See the Details column below.", BODY)
+
 def build_report(scan, out_dir):
     """Build a PDF from a scan dict (same shape as the scan API returns).
     Returns the Path of the new file."""
@@ -172,6 +183,7 @@ def build_report(scan, out_dir):
         Spacer(1, 8),
         _p("Summary", H2),
         _summary_table(scan),
+        *([_warning(scan)] if _warning(scan) else []),
         Spacer(1, 6),
         _p("Findings marked 'suspected' or 'manual review' need a person to confirm "
            "them. A scan without a finding does not prove the API is safe.", SMALL),

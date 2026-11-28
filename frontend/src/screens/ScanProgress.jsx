@@ -63,6 +63,19 @@ export default function ScanProgress() {
             {(scan.findings || []).length}
           </p>
           {scan.error && <p style={{ color: "red" }}>{scan.error}</p>}
+          {!running && (() => {
+            const results = scan.results || [];
+            const errors = results.filter((r) => r.outcome === "Error").length;
+            if (scan.requests_made === 0 || (results.length && errors * 2 >= results.length)) {
+              return (
+                <p style={{ color: "orange" }}>
+                  Warning: {scan.requests_made === 0 ? "no requests were sent" : "most checks ended in Error"}.
+                  "Completed" does not mean the API was tested. Check the Details column below.
+                </p>
+              );
+            }
+            return null;
+          })()}
           {running && <button onClick={handleCancel}>Cancel scan</button>}
           {!running && (
             <p>

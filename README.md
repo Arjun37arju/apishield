@@ -116,6 +116,17 @@ Invoke-RestMethod -Method Post http://127.0.0.1:5000/lab/reset
 The scan should find 9 of the 10 planted weaknesses. The tenth (no HTTPS) is flagged for manual
 review because the lab exception allows plain http.
 
+## Troubleshooting
+
+- **"loopback address is not allowed"**: the lab exception is off. It is only needed for the
+  practice lab (127.0.0.1:5000). Start with `-Lab` or set `ALLOW_LAB_EXCEPTION=true` in
+  `backend\.env` and restart the backend. Real APIs do not need it.
+- **"test account missing"**: add User A and User B on the Auth screen (or tick the lab
+  accounts box when scanning the lab).
+- **A scan shows "Completed" but found nothing**: check the Details column. If requests are 0
+  or most checks say Error, the scan did not test anything.
+- Your own API on localhost or a private IP is blocked on purpose. Only public addresses on
+  ports 80 and 443 can be scanned.
 ## Known limits
 
 - Tested against the local lab only, not against real APIs.
