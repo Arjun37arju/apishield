@@ -59,6 +59,19 @@ foreach ($p in 8000, 5173) {
 }
 if ($Lab -and (PortBusy 5000)) { Fail "Port 5000 is already in use. Close the other lab window first." }
 
+# ---- Erase scan data on every start and stop (set $env:KEEP_DATA="1" to keep it) ----
+$dbFile = "$root\backend\data\apishield.db"
+function ClearData {
+  if ($env:KEEP_DATA -eq "1") { return }
+  foreach ($f in @($dbFile, "$dbFile-wal", "$dbFile-shm", "$dbFile-journal")) {
+    if (Test-Path $f) {
+      try { Remove-Item $f -Force -ErrorAction Stop; Write-Host "Cleared old scan data." }
+      catch { Write-Host "Could not clear $f" -ForegroundColor Yellow }
+    }
+  }
+}
+ClearData
+# ---- end ----
 # The lab exception is forced OFF unless -Lab is given, whatever backend\.env says.
 $env:ALLOW_LAB_EXCEPTION = $(if ($Lab) { "true" } else { "false" })
 
@@ -103,5 +116,7 @@ try {
 finally {
   StopAll
   Remove-Item Env:ALLOW_LAB_EXCEPTION -ErrorAction SilentlyContinue
+  Start-Sleep -Seconds 1
+  ClearData
   Write-Host "APIShield stopped."
 }
